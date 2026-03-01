@@ -15,13 +15,29 @@ const ProgressBar = ({ progress, color = COLORS.red, height = 6 }) => (<div clas
 
 export default function App() {
   const [screen, setScreen] = useState('landing');
+  const [navLoading, setNavLoading] = useState(false); // show page transition
   const [user, setUser] = useState({ name: 'Uddhav', language: 'en', subject: 'math', mastery: { math: 72, prog: 85, phys: 48, chem: 41 }, streak: 5, examDate: '2025-06-15' });
   const [chatInput, setChatInput] = useState('');
   const [messages, setMessages] = useState([{ role: 'ai', text: 'Namaste! I am your AI tutor. How can I help you learn today?' }]);
   const [isTyping, setIsTyping] = useState(false);
   const [quizState, setQuizState] = useState({ idx: 0, score: 0, finished: false, chosen: null });
 
-  const navigate = (s) => { window.scrollTo(0, 0); setScreen(s); };
+  const examDaysLeft = () => {
+    const today = new Date();
+    const exam = new Date(user.examDate);
+    const diff = Math.ceil((exam - today) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 0;
+  };
+
+  const navigate = (s) => {
+    // small loading for nicer transition
+    setNavLoading(true);
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      setScreen(s);
+      setNavLoading(false);
+    }, 200);
+  };
 
   const handleChat = async () => {
     if (!chatInput.trim()) return;
@@ -29,11 +45,15 @@ export default function App() {
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setChatInput('');
     setIsTyping(true);
-    setTimeout(() => { setMessages(prev => [...prev, { role: 'ai', text: 'I understand. How can I help further?' }]); setIsTyping(false); }, 1200);
+    // mimic network latency
+    setTimeout(() => {
+      setMessages(prev => [...prev, { role: 'ai', text: 'I understand. How can I help further?' }]);
+      setIsTyping(false);
+    }, 1200);
   };
 
   const LandingScreen = () => (
-    <div className="min-h-screen flex flex-col bg-[#07090F] relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-[#07090F] relative overflow-hidden animate-fade-in">
       <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: `linear-gradient(${COLORS.red} 1px, transparent 1px), linear-gradient(90deg, ${COLORS.red} 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#E8232A] opacity-10 blur-[120px]" />
       <div className="absolute bottom-[0%] right-[-10%] w-[30%] h-[30%] bg-[#8B5CF6] opacity-10 blur-[100px]" />
@@ -45,8 +65,9 @@ export default function App() {
           <Badge color={COLORS.green}>100% OFFLINE</Badge>
           <Badge color={COLORS.teal}>5 LANGUAGES</Badge>
           <Badge color={COLORS.purple}>ADAPTIVE LEARNING</Badge>
+          <Badge color={COLORS.orange}><Clock size={12} className="inline-block mr-1" />{examDaysLeft()} days to exam</Badge>
         </div>
-        <button onClick={() => navigate('onboarding-lang')} className="mt-12 px-10 py-4 rounded-xl font-mono font-bold text-white transition-all transform hover:scale-105 active:scale-95 shadow-2xl" style={{ backgroundColor: COLORS.red, boxShadow: `0 10px 40px ${COLORS.red}40` }}>START LEARNING →</button>
+        <button onClick={() => navigate('onboarding-lang')} className="mt-12 px-10 py-4 rounded-xl font-mono font-bold text-white transition-all transform hover:scale-105 active:scale-95 shadow-2xl animate-pulse ring-4 ring-offset-2 ring-red-500/30" style={{ backgroundColor: COLORS.red, boxShadow: `0 10px 40px ${COLORS.red}40` }}>START LEARNING →</button>
         <div className="mt-16 grid grid-cols-3 gap-12 border-t border-[#1E2A3A] pt-12 w-full">
           <div><div className="text-3xl font-serif font-black" style={{ color: COLORS.red }}>40M+</div><div className="text-[10px] font-mono text-[#4A5568] uppercase tracking-widest mt-1">Students</div></div>
           <div><div className="text-3xl font-serif font-black" style={{ color: COLORS.red }}>&lt;2s</div><div className="text-[10px] font-mono text-[#4A5568] uppercase tracking-widest mt-1">Latency</div></div>
@@ -57,7 +78,7 @@ export default function App() {
   );
 
   const OnboardingLangScreen = () => (
-    <div className="min-h-screen bg-[#07090F] flex flex-col items-center justify-center p-6">
+    <div className={`min-h-screen bg-[#07090F] flex flex-col items-center justify-center p-6 animate-fade-in transition-opacity duration-300 ${navLoading ? 'opacity-50' : 'opacity-100'}`}>
       <div className="w-full max-w-md">
         <h2 className="text-3xl font-serif font-bold text-center mb-2 text-white">Choose Your Language</h2>
         <p className="text-center font-mono text-[#8892A4] text-xs mb-8">EduMind AI responds in your native language</p>
@@ -75,7 +96,7 @@ export default function App() {
   );
 
   const OnboardingSubjScreen = () => (
-    <div className="min-h-screen bg-[#07090F] flex flex-col items-center justify-center p-6">
+    <div className={`min-h-screen bg-[#07090F] flex flex-col items-center justify-center p-6 animate-fade-in transition-opacity duration-300 ${navLoading ? 'opacity-50' : 'opacity-100'}`}>
       <div className="w-full max-w-md">
         <h2 className="text-3xl font-serif font-bold text-center mb-2 text-white">Focus Area</h2>
         <p className="text-center font-mono text-[#8892A4] text-xs mb-8">Select a primary subject to start learning</p>
@@ -94,10 +115,17 @@ export default function App() {
   );
 
   const DashboardScreen = () => (
-    <div className="min-h-screen bg-[#07090F] text-white pb-24">
+    <div className={`min-h-screen bg-[#07090F] text-white pb-24 animate-fade-in transition-opacity duration-300 ${navLoading ? 'opacity-50' : 'opacity-100'}`}>
       <div className="p-6 flex justify-between items-center border-b border-[#1E2A3A]">
         <div><div className="flex items-center gap-2"><div className="w-7 h-7 bg-[#E8232A] rounded-lg flex items-center justify-center text-white font-black text-sm">E</div><h3 className="font-serif font-bold text-lg">EduMind AI</h3></div><p className="text-[9px] font-mono text-[#8892A4] mt-0.5 uppercase">Team Signal_404</p></div>
         <div className="flex gap-2"><Badge color={COLORS.green}>OFFLINE</Badge><Badge color={COLORS.red}>NPU ACTIVE</Badge></div>
+      </div>
+      <div className="px-6 mt-6">
+        <h2 className="text-lg font-serif font-bold">Hello, {user.name} 👋</h2>
+        <div className="mt-4 p-5 rounded-2xl bg-[#111827] border border-[#1E2A3A] flex items-center gap-3">
+          <Clock size={20} className="text-[#E8232A]" />
+          <span className="font-mono">Exam in {examDaysLeft()} days</span>
+        </div>
       </div>
       <div className="px-6 space-y-6 mt-6">
         <div className="p-5 rounded-2xl bg-[#111827] border border-[#1E2A3A]"><Badge color={COLORS.red} outline>TODAY'S GOAL</Badge><h2 className="text-xl font-serif font-bold mt-2">Study {SUBJECTS.find(s=>s.id===user.subject)?.label}</h2><div className="mt-6"><ProgressBar progress={42} /></div></div>
@@ -108,10 +136,10 @@ export default function App() {
         </div>
       </div>
       <div className="fixed bottom-0 left-0 right-0 bg-[#0D1220] border-t border-[#1E2A3A] p-2 flex justify-around">
-        <button onClick={() => navigate('dashboard')} className="flex flex-col items-center gap-1 p-2 min-w-[60px] text-[#E8232A]"><LayoutDashboard size={20} /><span className="text-[8px] font-mono font-bold uppercase">Home</span></button>
-        <button onClick={() => navigate('chat')} className="flex flex-col items-center gap-1 p-2 min-w-[60px] text-[#4A5568]"><MessageSquare size={20} /><span className="text-[8px] font-mono font-bold uppercase">Tutor</span></button>
-        <button onClick={() => navigate('quiz')} className="flex flex-col items-center gap-1 p-2 min-w-[60px] text-[#4A5568]"><Zap size={20} /><span className="text-[8px] font-mono font-bold uppercase">Quiz</span></button>
-        <button onClick={() => navigate('progress')} className="flex flex-col items-center gap-1 p-2 min-w-[60px] text-[#4A5568]"><TrendingUp size={20} /><span className="text-[8px] font-mono font-bold uppercase">Stats</span></button>
+        <button onClick={() => navigate('dashboard')} className={`flex flex-col items-center gap-1 p-2 min-w-[60px] transition-colors transform ${screen==='dashboard' ? 'text-[#E8232A]' : 'text-[#4A5568]'} hover:scale-110 active:scale-95`}><LayoutDashboard size={20} /><span className="text-[8px] font-mono font-bold uppercase">Home</span></button>
+        <button onClick={() => navigate('chat')} className={`flex flex-col items-center gap-1 p-2 min-w-[60px] transition-colors transform ${screen==='chat' ? 'text-[#E8232A]' : 'text-[#4A5568]'} hover:scale-110 active:scale-95`}><MessageSquare size={20} /><span className="text-[8px] font-mono font-bold uppercase">Tutor</span></button>
+        <button onClick={() => navigate('quiz')} className={`flex flex-col items-center gap-1 p-2 min-w-[60px] transition-colors transform ${screen==='quiz' ? 'text-[#E8232A]' : 'text-[#4A5568]'} hover:scale-110 active:scale-95`}><Zap size={20} /><span className="text-[8px] font-mono font-bold uppercase">Quiz</span></button>
+        <button onClick={() => navigate('progress')} className={`flex flex-col items-center gap-1 p-2 min-w-[60px] transition-colors transform ${screen==='progress' ? 'text-[#E8232A]' : 'text-[#4A5568]'} hover:scale-110 active:scale-95`}><TrendingUp size={20} /><span className="text-[8px] font-mono font-bold uppercase">Stats</span></button>
       </div>
     </div>
   );
@@ -120,7 +148,7 @@ export default function App() {
     const scrollRef = useRef(null);
     useEffect(() => { scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight); }, [messages, isTyping]);
     return (
-      <div className="min-h-screen bg-[#07090F] flex flex-col">
+      <div className={`min-h-screen bg-[#07090F] flex flex-col animate-fade-in transition-opacity duration-300 ${navLoading ? 'opacity-50' : 'opacity-100'}`}>
         <div className="p-4 bg-[#0D1220] border-b border-[#1E2A3A] flex items-center gap-3">
           <button onClick={() => navigate('dashboard')} className="text-[#8892A4]"><ChevronLeft /></button>
           <div className="w-10 h-10 rounded-full bg-[#E8232A] flex items-center justify-center text-lg">∑</div>
@@ -128,7 +156,7 @@ export default function App() {
         </div>
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>  
               <div className={`max-w-[85%] p-3 rounded-2xl text-xs font-mono leading-relaxed shadow-lg ${m.role === 'user' ? 'bg-[#E8232A] text-white' : 'bg-[#111827] border border-[#1E2A3A] text-[#F0F6FF]'}`}>{m.text}</div>
             </div>
           ))}
@@ -137,7 +165,9 @@ export default function App() {
         <div className="p-4 bg-[#07090F] border-t border-[#1E2A3A]">
           <div className="bg-[#111827] border border-[#1E2A3A] rounded-xl p-2 flex items-center gap-2">
             <input value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleChat()} placeholder="Ask anything..." className="flex-1 bg-transparent border-none outline-none font-mono text-sm text-white py-2" />
-            <button onClick={handleChat} className="p-2 bg-[#E8232A] text-white rounded-lg"><Send size={18} /></button>
+            <button onClick={handleChat} className="p-2 bg-[#E8232A] text-white rounded-lg flex items-center justify-center">
+              {isTyping ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Send size={18} />}
+            </button>
           </div>
         </div>
       </div>
@@ -145,18 +175,27 @@ export default function App() {
   };
 
   const QuizScreen = () => {
+    const [optionLoading, setOptionLoading] = useState(false);
     const q = QUIZ_QUESTIONS[quizState.idx];
-    const handleAnswer = (i) => { setQuizState({ ...quizState, chosen: i }); if (i === q.correct) setQuizState(prev => ({ ...prev, score: prev.score + 1 })); };
+    const handleAnswer = (i) => {
+      setOptionLoading(true);
+      setTimeout(() => {
+        setQuizState({ ...quizState, chosen: i });
+        if (i === q.correct) setQuizState(prev => ({ ...prev, score: prev.score + 1 }));
+        setOptionLoading(false);
+      }, 400);
+    };
     const nextQ = () => { if (quizState.idx < QUIZ_QUESTIONS.length - 1) setQuizState({ ...quizState, idx: quizState.idx + 1, chosen: null }); else setQuizState({ ...quizState, finished: true }); };
     if (quizState.finished) return (<div className="min-h-screen bg-[#07090F] text-white p-6 flex flex-col items-center justify-center"><div className="text-6xl font-bold mb-6">{quizState.score}/{QUIZ_QUESTIONS.length}</div><h2 className="text-3xl font-serif font-bold">Quiz Complete!</h2><button onClick={() => navigate('dashboard')} className="mt-8 py-4 px-10 rounded-xl bg-[#E8232A] font-mono font-bold">Back</button></div>);
     return (
-      <div className="min-h-screen bg-[#07090F] text-white p-6 flex flex-col">
+      <div className={`min-h-screen bg-[#07090F] text-white p-6 flex flex-col animate-fade-in transition-opacity duration-300 ${navLoading ? 'opacity-50' : 'opacity-100'}`}>
         <button onClick={() => navigate('dashboard')} className="text-[#8892A4] mb-6">← BACK</button>
         <h2 className="text-2xl font-serif font-bold mb-4">Q{quizState.idx + 1}: {q.question}</h2>
         <div className="space-y-3">
+          {optionLoading && <div className="text-center text-[#8892A4] text-sm">Checking answer...</div>}
           {q.options.map((opt, i) => (
-            <button key={i} disabled={quizState.chosen !== null} onClick={() => handleAnswer(i)} className={`w-full p-4 rounded-xl border transition-all text-left font-mono text-sm ${quizState.chosen !== null ? (i === q.correct ? 'border-[#10B981] bg-[#10B981]10' : i === quizState.chosen ? 'border-[#E8232A] bg-[#E8232A]10' : 'border-[#1E2A3A] bg-[#111827]') : 'border-[#1E2A3A] bg-[#111827]'}`}>
-              {opt}
+            <button key={i} disabled={quizState.chosen !== null} onClick={() => handleAnswer(i)} className={`w-full p-4 rounded-xl border transition-all text-left font-mono text-sm flex justify-between items-center ${quizState.chosen !== null ? (i === q.correct ? 'border-[#10B981] bg-[#10B981]10' : i === quizState.chosen ? 'border-[#E8232A] bg-[#E8232A]10' : 'border-[#1E2A3A] bg-[#111827]') : 'border-[#1E2A3A] bg-[#111827]'}`}> 
+              {opt}{quizState.chosen !== null && (i === q.correct ? <CheckCircle2 className="ml-2 text-[#10B981]" /> : i === quizState.chosen ? <XCircle className="ml-2 text-[#E8232A]" /> : null)}
             </button>
           ))}
         </div>
@@ -166,7 +205,7 @@ export default function App() {
   };
 
   const ProgressScreen = () => (
-    <div className="min-h-screen bg-[#07090F] text-white p-6">
+    <div className={`min-h-screen bg-[#07090F] text-white p-6 animate-fade-in transition-opacity duration-300 ${navLoading ? 'opacity-50' : 'opacity-100'}`}>
       <button onClick={() => navigate('dashboard')} className="text-[#8892A4] mb-8">← BACK</button>
       <h2 className="text-3xl font-serif font-bold mb-8">Performance</h2>
       <div className="space-y-6">
@@ -178,6 +217,7 @@ export default function App() {
 
   return (
     <div className="font-sans bg-[#07090F]">
+      {navLoading && <div className="fixed inset-0 bg-black/25 flex items-center justify-center z-50"><div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" /></div>}
       {screen === 'landing' && <LandingScreen />}
       {screen === 'onboarding-lang' && <OnboardingLangScreen />}
       {screen === 'onboarding-subj' && <OnboardingSubjScreen />}
