@@ -45,11 +45,22 @@ export default function App() {
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setChatInput('');
     setIsTyping(true);
-    // mimic network latency
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'ai', text: 'I understand. How can I help further?' }]);
+
+    try {
+      // call backend chat endpoint
+      const res = await fetch('http://localhost:5000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: userMsg }),
+      });
+      const data = await res.json();
+      setMessages(prev => [...prev, { role: 'ai', text: data.answer }]);
+    } catch (err) {
+      console.error('chat error', err);
+      setMessages(prev => [...prev, { role: 'ai', text: 'Oops, something went wrong.' }]);
+    } finally {
       setIsTyping(false);
-    }, 1200);
+    }
   };
 
   const LandingScreen = () => (

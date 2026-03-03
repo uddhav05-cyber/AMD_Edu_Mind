@@ -1,0 +1,16 @@
+fastapi>=0.95
+uvicorn[standard]>=0.22
+
+# AI/ML libraries (placeholders, adjust versions as needed)
+langchain
+llama-index
+faiss-cpu
+chromadb
+transformers
+onnxruntime
+openai-whisper
+indic-nlp-library
+requests
+
+# Optional cloud sync
+supabase
