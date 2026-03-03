@@ -1,6 +1,9 @@
 fastapi>=0.95
 uvicorn[standard]>=0.22
 
+# Core dependencies
+requests>=2.31
+
 # AI/ML libraries (install as needed)
 # For MVP, keep core dependencies minimal
 # Uncomment as you integrate features:
@@ -12,7 +15,17 @@ uvicorn[standard]>=0.22
 # onnxruntime>=1.16
 # openai-whisper>=20231117
 # indic-nlp-library>=0.2
-requests>=2.31
+
+# AMD Integration (Ryzen AI & ROCm)
+# Uncomment for ONNX Runtime with AMD optimizations:
+# onnxruntime-gpu>=1.16  # GPU-accelerated (for AMD Radeon on ROCm)
+# or for CPU/NPU:
+# onnxruntime>=1.16
+
+# PyTorch with ROCm support (for fine-tuning on AMD GPUs):
+# torch>=2.0 --index-url https://download.pytorch.org/whl/rocm5.7
+# torchvision>=0.15 --index-url https://download.pytorch.org/whl/rocm5.7
+# torchaudio>=2.0 --index-url https://download.pytorch.org/whl/rocm5.7
 
 # Optional cloud sync
 # supabase>=2.0

@@ -11,6 +11,23 @@ try:
 except ImportError:
     import nlp_utils
 
+try:
+    from . import amd_npu
+except ImportError:
+    import amd_npu as amd_npu_module
+    amd_npu = amd_npu_module
+
+try:
+    from . import amd_rocm
+except ImportError:
+    import amd_rocm as amd_rocm_module
+    amd_rocm = amd_rocm_module
+
+try:
+    from . import hardware_utils
+except ImportError:
+    import hardware_utils
+
 # global state placeholders
 _loaded = False
 
@@ -18,11 +35,25 @@ _loaded = False
 def initialize_models():
     """Called on startup; load models or prepare vector stores."""
     global _loaded
+    # Initialize hardware detection
+    hw_config = hardware_utils.get_optimization_config()
+    print(f"[ai_models] Hardware optimization config: {hw_config}")
+    
+    # Try to load quantized Mistral-7B on Ryzen AI NPU if available
+    if hw_config.get("hardware_target") in ["npu", "amd_advantage"]:
+        ryzen_ai = amd_npu.get_ryzen_ai_instance()
+        print(f"[ai_models] Ryzen AI NPU initialized: {ryzen_ai.loaded}")
+    
+    # Check for AMD GPU (ROCm)
+    if hw_config.get("hardware_target") == "rocm_gpu":
+        rocm = amd_rocm.get_rocm_instance()
+        print(f"[ai_models] AMD ROCm initialized: {rocm.initialized}")
+    
     # TODO: load quantized Mistral/LLaMA via ONNX, initialize LangChain,
     # LlamaIndex, FAISS/ChromaDB, etc.  For now we just mark that the
     # initialization logic ran.
     _loaded = True
-    print("[ai_models] initialization complete (stub)")
+    print("[ai_models] initialization complete (stub with AMD hardware detection)")
 
 
 async def chat(prompt: str, language: str | None = None) -> str:

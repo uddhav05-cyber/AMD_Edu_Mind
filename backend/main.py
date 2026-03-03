@@ -1,13 +1,19 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List
+from typing import List, Dict, Any
 import sqlite3
 import os
 try:
     from . import ai_models
+    from . import hardware_utils
+    from . import amd_npu
+    from . import amd_rocm
 except ImportError:
     import ai_models
+    import hardware_utils
+    import amd_npu
+    import amd_rocm
 
 app = FastAPI(title="EduMind Backend")
 
@@ -117,6 +123,109 @@ class PlannerResponse(BaseModel):
 async def planner(req: PlannerRequest):
     sched = await ai_models.plan_study(req.exam_date, req.subjects, req.performance_gaps)
     return PlannerResponse(schedule=sched)
+
+
+# --- AMD Integration endpoints ---
+
+class HardwareInfoResponse(BaseModel):
+    system_info: Dict[str, str]
+    is_amd_advantage: bool
+    has_npu: bool
+    has_amd_gpu: bool
+    battery_saving_enabled: bool
+    optimization_config: Dict[str, Any]
+
+
+@app.get("/api/amd/hardware-info", response_model=HardwareInfoResponse)
+async def get_hardware_info():
+    """Return detected AMD hardware capabilities and optimization settings."""
+    return HardwareInfoResponse(
+        system_info=hardware_utils.HardwareOptimizer.get_system_info(),
+        is_amd_advantage=hardware_utils.HardwareOptimizer.is_amd_advantage(),
+        has_npu=hardware_utils.HardwareOptimizer.has_npu(),
+        has_amd_gpu=hardware_utils.HardwareOptimizer.has_amd_gpu(),
+        battery_saving_enabled=hardware_utils.HardwareOptimizer.should_enable_power_saving(),
+        optimization_config=hardware_utils.get_optimization_config(),
+    )
+
+
+class RyzenAIStatusResponse(BaseModel):
+    loaded: bool
+    quantization: str
+    npu_available: bool
+    execution_providers: List[str]
+
+
+@app.get("/api/amd/ryzen-ai-status", response_model=RyzenAIStatusResponse)
+async def get_ryzen_ai_status():
+    """Return status of Mistral-7B quantized model running on Ryzen AI NPU."""
+    ryzen_ai = amd_npu.get_ryzen_ai_instance()
+    hw_info = ryzen_ai.get_hardware_info()
+    return RyzenAIStatusResponse(
+        loaded=hw_info["model_loaded"],
+        quantization=hw_info["quantization"],
+        npu_available=hw_info["npu_available"],
+        execution_providers=hw_info["execution_providers"],
+    )
+
+
+class ROCmStatusResponse(BaseModel):
+    initialized: bool
+    device_type: str
+    device_info: Dict[str, str]
+    available_fine_tuned_models: List[str]
+    gpu_memory: Dict[str, float]
+
+
+@app.get("/api/amd/rocm-status", response_model=ROCmStatusResponse)
+async def get_rocm_status():
+    """Return AMD ROCm GPU training capabilities."""
+    rocm = amd_rocm.get_rocm_instance()
+    return ROCmStatusResponse(
+        initialized=rocm.initialized,
+        device_type=rocm.device_type,
+        device_info=rocm.get_device_info(),
+        available_fine_tuned_models=rocm.list_fine_tuned_models(),
+        gpu_memory=rocm.get_gpu_memory_info(),
+    )
+
+
+class FineTuneRequest(BaseModel):
+    model_name: str  # e.g. "mistral-7b"
+    syllabus: str  # e.g. "CBSE-Class-12-Math", "JEE-Advanced", "GATE-CSE"
+    training_data_path: str
+    epochs: int = 3
+
+
+class FineTuneResponse(BaseModel):
+    status: str
+    job_id: str
+    model: str
+    syllabus: str
+    error: str | None = None
+
+
+@app.post("/api/amd/fine-tune", response_model=FineTuneResponse)
+async def start_fine_tune(req: FineTuneRequest):
+    """
+    Start a fine-tuning job for a custom syllabus on AMD GPUs.
+
+    This would train a domain-specific adapter (LoRA/QLoRA) for Indian curricula.
+    """
+    rocm = amd_rocm.get_rocm_instance()
+    result = rocm.start_fine_tuning_job(
+        model_name=req.model_name,
+        syllabus=req.syllabus,
+        training_data_path=req.training_data_path,
+        epochs=req.epochs,
+    )
+    return FineTuneResponse(
+        status=result["status"],
+        job_id=result.get("job_id", ""),
+        model=result.get("model", ""),
+        syllabus=result.get("syllabus", req.syllabus),
+        error=result.get("error", None),
+    )
 
 
 class EmbedRequest(BaseModel):
