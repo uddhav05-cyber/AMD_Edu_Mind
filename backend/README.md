@@ -32,13 +32,31 @@ uvicorn main:app --reload --host=0.0.0.0 --port=5000
 
 ## Available endpoints
 
+### Core / utility
+
 - `GET /api/health` – basic health check
-- `POST /api/chat` – accepts `{ "question": "..." }` and returns `{ "answer": "..." }`
-- `POST /api/embed` – simple embedding stub, takes `{ "text": "..." }` and returns a `vector` array
-- Notes CRUD for demonstration:
+- `POST /api/chat` – simple conversational interface
+- `POST /api/embed` – embedding placeholder
+- Notes CRUD (SQLite demonstration):
   - `GET /api/notes`
   - `POST /api/notes` (body `{ "text": "..." }`)
   - `DELETE /api/notes/{id}`
+
+### Adaptive AI tutor / study features
+
+- `POST /api/explain` – provide step-by-step solution to a problem
+- `POST /api/hint` – return a hint for a problem without giving the full
+  answer
+- `POST /api/quiz` – auto‑generate quiz questions by subject/difficulty
+- `POST /api/feedback` – rubric‑aware feedback on essays/code/etc.
+- `POST /api/planner` – generate a personalised study schedule from exam
+  date, syllabus and performance gaps
+
+All AI‑related endpoints accept an optional `language` parameter for
+multilingual support (hi/mr/te/ta/en) and are currently stubs returning
+placeholder data.  Implementations should call the models loaded in
+`ai_models.py` and, where necessary, invoke Bhashini/IndicNLP for
+translation/preprocessing.
 
 The server allows cross‑origin requests so the React frontend can call it from
 `localhost:5173`.

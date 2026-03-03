@@ -1,16 +1,18 @@
 fastapi>=0.95
 uvicorn[standard]>=0.22
 
-# AI/ML libraries (placeholders, adjust versions as needed)
-langchain
-llama-index
-faiss-cpu
-chromadb
-transformers
-onnxruntime
-openai-whisper
-indic-nlp-library
-requests
+# AI/ML libraries (install as needed)
+# For MVP, keep core dependencies minimal
+# Uncomment as you integrate features:
+# langchain>=0.1
+# llama-index>=0.9
+# faiss-cpu>=1.7
+# chromadb>=0.3
+# transformers>=4.35
+# onnxruntime>=1.16
+# openai-whisper>=20231117
+# indic-nlp-library>=0.2
+requests>=2.31
 
 # Optional cloud sync
-supabase
+# supabase>=2.0
