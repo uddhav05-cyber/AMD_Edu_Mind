@@ -4,9 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EduMind AI</title>
+  <meta name="theme-color" content="#2563EB" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    /* fallback styles in case CSS bundle fails */
+    body { margin:0; font-family: Inter, system-ui, sans-serif; background:#F8FAFF; color:#1f2937; }
+    .container {max-width:800px; margin:0 auto; padding:2rem;}
+    header, footer {text-align:center; padding:1rem 0; background:#fff; border-bottom:1px solid #e2e8f0;}
+    nav button {margin:0 .5rem; background:none; border:none; cursor:pointer; color:#2563EB; font-weight:600;}
+    h1 {font-size:2.5rem; margin-bottom:1rem;}
+    p {margin-bottom:1rem; line-height:1.6;}
+    .cards {display:flex; flex-wrap:wrap; gap:1rem; justify-content:center;}
+    .card {background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:1rem; flex:1 1 200px;}
+    .button {display:inline-block;padding:.75rem 1.5rem;border-radius:6px;text-decoration:none;color:#fff;font-weight:600;}
+    .btn-primary {background:#2563EB;}
+    .btn-secondary {background:#fff;color:#2563EB;border:1px solid #2563EB;}
+  </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root"><div class="container"><header><h1>EduMind AI</h1><div>Offline multilingual tutor</div><nav><button onclick="window.location='#'">Home</button><button onclick="window.location='#'">Chat</button><button onclick="window.location='#'">Quiz</button><button onclick="window.location='#'">Progress</button></nav></header><main><h1>EduMind AI</h1><p>Offline multilingual AI tutor — personalized learning, built to run locally on AMD hardware.</p><div><a class="button btn-primary" href="#">Get Started</a> <a class="button btn-secondary" href="#">Open Dashboard</a></div><div class="cards"><div class="card"><h3>Offline First</h3><p>Run models locally without sending data to cloud services.</p></div><div class="card"><h3>Multilingual</h3><p>Supports multiple Indian languages for inclusive learning.</p></div><div class="card"><h3>Adaptive</h3><p>Personalized study plans and quizzes to track progress.</p></div></div></main><footer>© 2026 EduMind AI — Offline • Privacy first</footer></div></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
